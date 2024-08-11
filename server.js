@@ -26,6 +26,7 @@ const server = http.createServer(async (req, res) => {
       const data = await fs.readFile(filePath);
       res.setHeader("Content-Type", "text/html");
       res.write(data);
+
       res.end();
     } else {
       throw new Error("Method not allowed");
