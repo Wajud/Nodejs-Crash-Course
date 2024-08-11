@@ -7,29 +7,54 @@ const users = [
   { id: 3, name: "Jim Doe" },
 ];
 
-const server = createServer((req, res) => {
-  res.setHeader("Content-Type", "application/json");
-  if (req.url === "/api/users" && req.method === "GET") {
-    res.write(JSON.stringify(users));
-    res.end();
-  } else if (req.url.match(/\/api\/users\/([0-9]+)/) && req.method === "GET") {
-    const id = req.url.split("/")[3];
-    const user = users.find((user) => user.id === Number(id));
-    if (user) {
-      res.write(JSON.stringify(user));
-    } else {
-      res.writeHead(404, { "Content-Type": "application/json" });
-      res.write(JSON.stringify({ message: "User Not Found" }));
-    }
+//Logger Middleware
 
-    res.end();
+const logger = (req, res, next) => {
+  res.setHeader("Content-Type", "application/json");
+  next();
+};
+
+//Handler for GET /api/users
+
+const getUsersHandler = (req, res) => {
+  res.write(JSON.stringify(users));
+  res.end();
+};
+
+// Handler for GET /api/users/id
+
+const getUserById = (req, res) => {
+  const id = req.url.split("/")[3];
+  const user = users.find((user) => user.id === Number(id));
+  if (user) {
+    res.write(JSON.stringify(user));
   } else {
-    //  res.setHeader("Content-Type", "application/json");
-    //  req.statusCode = 404;
     res.writeHead(404, { "Content-Type": "application/json" });
-    res.write(JSON.stringify({ message: "Route not found" }));
-    res.end();
+    res.write(JSON.stringify({ message: "User Not Found" }));
   }
+  res.end();
+};
+
+//Handler for Not Found
+
+const notFoundHandler = (req, res) => {
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.write(JSON.stringify({ message: "Route not found" }));
+  res.end();
+};
+const server = createServer((req, res) => {
+  logger(req, res, () => {
+    if (req.url === "/api/users" && req.method === "GET") {
+      getUsersHandler(req, res);
+    } else if (
+      req.url.match(/\/api\/users\/([0-9]+)/) &&
+      req.method === "GET"
+    ) {
+      getUserById(req, res);
+    } else {
+      notFoundHandler(req, res);
+    }
+  });
 });
 
 server.listen(PORT, () => {
