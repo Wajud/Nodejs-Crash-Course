@@ -42,6 +42,24 @@ const notFoundHandler = (req, res) => {
   res.write(JSON.stringify({ message: "Route not found" }));
   res.end();
 };
+
+//Route Handler for POST request to /api/users
+
+const createUserHandler = (req, res) => {
+  let body = "";
+  //listen for data
+  req.on("data", (chunk) => {
+    body += chunk.toString();
+  });
+  req.on("end", () => {
+    const newUser = JSON.parse(body);
+    users.push(newUser);
+    res.StatusCode = 201; //something created
+    res.write(JSON.stringify(newUser));
+    res.end();
+  });
+};
+
 const server = createServer((req, res) => {
   logger(req, res, () => {
     if (req.url === "/api/users" && req.method === "GET") {
@@ -51,6 +69,8 @@ const server = createServer((req, res) => {
       req.method === "GET"
     ) {
       getUserById(req, res);
+    } else if (req.url === "/api/users" && req.method === "POST") {
+      createUserHandler(req, res);
     } else {
       notFoundHandler(req, res);
     }
