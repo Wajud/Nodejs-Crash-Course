@@ -1,4 +1,5 @@
 import { createServer } from "http";
+import fs from "fs";
 
 const PORT = 8000;
 const users = [
@@ -56,6 +57,10 @@ const createUserHandler = (req, res) => {
     users.push(newUser);
     res.StatusCode = 201; //something created
     res.write(JSON.stringify(newUser));
+    fs.writeFile("data.txt", JSON.stringify(users), (err) => {
+      if (err) throw err;
+      console.log("Okay we wrote into data.txt");
+    });
     res.end();
   });
 };
